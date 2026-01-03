@@ -1,0 +1,209 @@
+* {
+    box-sizing: border-box;
+    font-family: 'Cairo', sans-serif;
+}
+
+body {
+    margin: 0;
+    background: #f4f6f9;
+    padding: 20px;
+}
+
+/* التخطيط */
+.container {
+    display: grid;
+    grid-template-columns: 360px 1fr;
+    gap: 20px;
+}
+
+/* بطاقة الطالب */
+.student-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+.student-card h3 {
+    text-align: center;
+    color: #2f6fed;
+}
+
+.avatar {
+    width: 140px;
+    height: 140px;
+    margin: 15px auto;
+    border-radius: 50%;
+    background: #eef2f7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 60px;
+    color: #9aa4b2;
+    overflow: hidden;
+}
+
+.avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.buttons {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+.buttons button {
+    flex: 1;
+    border: none;
+    padding: 10px;
+    border-radius: 10px;
+    cursor: pointer;
+    color: #fff;
+}
+
+.btn-camera { background: #6c63ff; }
+.btn-upload { background: #17a2b8; }
+
+.form-group {
+    margin-bottom: 12px;
+}
+
+.form-group label {
+    font-size: 13px;
+    color: #555;
+}
+
+.form-group input,
+.form-group select {
+    width: 100%;
+    padding: 9px;
+    border-radius: 8px;
+    border: 1px solid #ddd;
+}
+
+.btn-save {
+    width: 100%;
+    background: #28a745;
+    color: #fff;
+    border: none;
+    padding: 12px;
+    border-radius: 10px;
+    cursor: pointer;
+}
+
+/* جدول الطلاب */
+.table-card {
+    background: #fff;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 8px 25px rgba(0,0,0,0.08);
+}
+
+.search-box {
+    position: relative;
+    margin-bottom: 15px;
+}
+
+.search-box input {
+    width: 100%;
+    padding: 10px 40px 10px 10px;
+    border-radius: 10px;
+    border: 1px solid #ddd;
+}
+
+.search-box i {
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+th {
+    background: #2f6fed;
+    color: #fff;
+    padding: 10px;
+}
+
+td {
+    padding: 10px;
+    text-align: center;
+    border-bottom: 1px solid #eee;
+}
+
+.student-img {
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    object-fit: cover;
+}
+/* ======================
+   أزرار الإجراءات (محسّنة)
+====================== */
+
+.actions {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+}
+
+/* زر عام */
+.btn-action {
+    width: 38px;
+    height: 38px;
+    border-radius: 12px;              /* ناعم بدل دائري كامل */
+    border: none;
+    cursor: pointer;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;                      /* الأيقونة بيضاء */
+    box-shadow: 0 6px 14px rgba(0,0,0,0.15);
+    transition: all 0.25s ease;
+}
+
+/* ======================
+   زر التعديل
+====================== */
+.btn-edit {
+    background: linear-gradient(135deg, #4facfe, #00c6ff);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+}
+
+.btn-edit:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 10px 22px rgba(0, 140, 255, 0.35);
+}
+
+/* ======================
+   زر الحذف
+====================== */
+.btn-delete {
+    background: linear-gradient(135deg, #ff6a6a, #dc3545); /* أحمر أنيق */
+    border: none;
+    color: #fff;
+    border-radius: 8px;
+}
+
+.btn-delete:hover {
+    transform: translateY(-2px) scale(1.05);
+    box-shadow: 0 10px 22px rgba(220, 53, 69, 0.4);
+}
+
+/* ======================
+   تأثير الضغط
+====================== */
+.btn-action:active {
+    transform: scale(0.92);
+    box-shadow: 0 4px 10px rgba(0,0,0,0.2);
+}
