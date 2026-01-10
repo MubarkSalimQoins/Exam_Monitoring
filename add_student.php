@@ -5,8 +5,7 @@ require "db.php";
 /* لاحقًا نضيف حماية المراقب */
 // require "auth_supervisor.php";
 
-/* جلب الطلاب من قاعدة البيانات
-   ASC = الأقدم في الأعلى، الجديد في الأسفل */
+/* جلب الطلاب */
 $stmt = $pdo->query("
     SELECT student_id, name, student_number, level, major, image_path
     FROM students
@@ -22,17 +21,32 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
-
 <link rel="stylesheet" href="students.css">
+<link rel="stylesheet" href="close.css">
 </head>
 <body>
 
 <div class="container">
 
-    <!-- ===== بطاقة الطالب (يمين) ===== -->
+    <!-- ===== بطاقة الطالب ===== -->
     <div class="student-card">
 
         <h3>إضافة طالب</h3>
+
+        <!-- ✅ رسائل الخطأ / النجاح -->
+        <?php if (!empty($_SESSION["error"])): ?>
+            <div class="alert error">
+                <i class="fa fa-circle-xmark"></i>
+                <?= $_SESSION["error"]; unset($_SESSION["error"]); ?>
+            </div>
+        <?php endif; ?>
+
+        <?php if (!empty($_SESSION["success"])): ?>
+            <div class="alert success">
+                <i class="fa fa-circle-check"></i>
+                <?= $_SESSION["success"]; unset($_SESSION["success"]); ?>
+            </div>
+        <?php endif; ?>
 
         <form action="save_student.php" method="POST" enctype="multipart/form-data">
 
@@ -54,24 +68,39 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
                 </button>
             </div>
 
+            <!-- زر التقاط صورة -->
+            <div class="buttons" id="captureBox" style="display:none; margin-top:8px; gap:8px;">
+    
+          <button type="button" onclick="capturePhoto()" class="btn-camera">
+        <i class="fa fa-camera-retro"></i> التقاط صورة
+           </button>
+
+    <!-- زر إغلاق الكاميرا -->
+           <button type="button" onclick="closeCamera()" class="btn-close-camera">
+        <i class="fa fa-times"></i> إغلاق الكاميرا
+            </button>
+
+</div>
+
+
             <div class="form-group">
                 <label>اسم الطالب</label>
-                <input  placeholder="ادخل اسم الطالب" type="text" name="name" required>
+                <input type="text" name="name" placeholder="ادخل اسم الطالب" required>
             </div>
 
             <div class="form-group">
                 <label>رقم القيد</label>
-                <input  placeholder="ادخل رقم القيد " type="text" name="student_number" required>
+                <input type="text" name="student_number" placeholder="ادخل رقم القيد" required>
             </div>
 
             <div class="form-group">
                 <label>المستوى</label>
                 <select name="level" required>
-                    <option value=""> اختر المستوى</option>
-                    <option value="الأول">الأول</option>
-                    <option value="الثاني">الثاني</option>
-                    <option value="الثالث">الثالث</option>
-                    <option value="الرابع">الرابع</option>
+                    <option value="">اختر المستوى</option>
+                    <option>الأول</option>
+                    <option>الثاني</option>
+                    <option>الثالث</option>
+                    <option>الرابع</option>
                 </select>
             </div>
 
@@ -91,14 +120,8 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
         </form>
     </div>
 
-    <!-- ===== جدول الطلاب (يسار) ===== -->
+    <!-- ===== جدول الطلاب ===== -->
     <div class="table-card">
-
-        <div class="search-box">
-            <input type="text" placeholder="ابحث بالاسم أو رقم القيد">
-            <i class="fa fa-search"></i>
-        </div>
-
         <table>
             <thead>
                 <tr>
@@ -111,10 +134,8 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
                     <th>الإجراءات</th>
                 </tr>
             </thead>
-
             <tbody>
-            <?php if ($students): ?>
-                <?php foreach ($students as $student): ?>
+            <?php if ($students): foreach ($students as $student): ?>
                 <tr>
                     <td><?= $student["student_id"] ?></td>
                     <td><?= htmlspecialchars($student["name"]) ?></td>
@@ -128,37 +149,21 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
                             <i class="fa fa-user-circle"></i>
                         <?php endif; ?>
                     </td>
-
-                    <!-- ✅ الإجراءات -->
                     <td>
                         <div class="actions">
-                            <button 
-                                class="btn-edit"
-                                data-id="<?= $student['student_id'] ?>"
-                                title="تعديل الطالب">
-                                <i class="fa fa-edit"></i>
-                            </button>
-
-                            <button 
-                                class="btn-delete"
-                                data-id="<?= $student['student_id'] ?>"
-                                title="حذف الطالب">
-                                <i class="fa fa-trash"></i>
-                            </button>
+                            <button class="btn-edit"><i class="fa fa-edit"></i></button>
+                            <button class="btn-delete"><i class="fa fa-trash"></i></button>
                         </div>
                     </td>
                 </tr>
-                <?php endforeach; ?>
-            <?php else: ?>
-                <tr>
-                    <td colspan="7" style="text-align:center;">لا يوجد طلاب</td>
-                </tr>
+            <?php endforeach; else: ?>
+                <tr><td colspan="7">لا يوجد طلاب</td></tr>
             <?php endif; ?>
             </tbody>
         </table>
-
     </div>
 
 </div>
+<script src="students.js"></script>
 </body>
 </html>

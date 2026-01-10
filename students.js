@@ -1,65 +1,122 @@
-// let studentCounter = 1;
-// let selectedImage = "";
+// ===============================
+// رسائل التنبيه (تختفي بعد 3 ثواني)
+// ===============================
+document.addEventListener("DOMContentLoaded", function () {
 
-// /* ===== رفع صورة ===== */
-// function openUpload() {
-//     document.getElementById("imageInput").click();
-// }
+    const alerts = document.querySelectorAll(".alert");
 
-// document.getElementById("imageInput").addEventListener("change", function (e) {
-//     const file = e.target.files[0];
-//     if (!file) return;
+    if (alerts.length > 0) {
+        setTimeout(() => {
+            alerts.forEach(alert => {
+                alert.style.animation = "slideFadeOut 0.4s ease forwards";
+                setTimeout(() => alert.remove(), 400);
+            });
+        }, 3000);
+    }
 
-//     const reader = new FileReader();
-//     reader.onload = function () {
-//         selectedImage = reader.result;
-//         document.getElementById("avatarPreview").innerHTML =
-//             `<img src="${reader.result}">`;
-//     };
-//     reader.readAsDataURL(file);
-// });
+    // ===============================
+    // منع الحفظ بدون صورة
+    // ===============================
+    const form = document.querySelector("form");
+    const imageInput = document.getElementById("imageInput");
 
-// /* ===== فتح الكاميرا (معاينة فقط الآن) ===== */
-// function openCamera() {
-//     alert("📷 سيتم ربط الكاميرا لاحقًا (الواجهة جاهزة)");
-// }
+    if (form) {
+        form.addEventListener("submit", function (e) {
+            if (!imageInput || imageInput.files.length === 0) {
+                e.preventDefault();
+                alert("❌ يجب إضافة صورة للطالب");
+            }
+        });
+    }
+});
 
-// /* ===== إضافة صف للجدول ===== */
-// function addStudentRow() {
-//     const name   = document.getElementById("student_name").value;
-//     const number = document.getElementById("student_number").value;
-//     const level  = document.getElementById("student_level").value;
-//     const major  = document.getElementById("student_major").value;
+// ===============================
+// متغيرات عامة للكاميرا
+// ===============================
+let cameraStream = null;
 
-//     if (!name || !number) {
-//         alert("⚠️ يرجى إدخال اسم الطالب ورقم القيد");
-//         return;
-//     }
+const imageInput   = document.getElementById("imageInput");
+const avatarPreview = document.getElementById("avatarPreview");
+const camera       = document.getElementById("camera");
+const snapshot     = document.getElementById("snapshot");
+const captureBox   = document.getElementById("captureBox");
 
-//     const table = document.getElementById("studentsTable");
+// ===============================
+// رفع صورة من الجهاز
+// ===============================
+function openUpload() {
+    imageInput.click();
+}
 
-//     const row = `
-//         <tr>
-//             <td>${studentCounter++}</td>
-//             <td>${name}</td>
-//             <td>${number}</td>
-//             <td>${level}</td>
-//             <td>${major}</td>
-//             <td>
-//                 ${selectedImage 
-//                     ? `<img src="${selectedImage}" class="student-img">`
-//                     : `<div class="student-img"></div>`
-//                 }
-//             </td>
-//         </tr>
-//     `;
+if (imageInput) {
+    imageInput.addEventListener("change", function () {
+        if (!this.files.length) return;
 
-//     table.insertAdjacentHTML("beforeend", row);
+        const reader = new FileReader();
+        reader.onload = function (e) {
+            avatarPreview.innerHTML = `<img src="${e.target.result}">`;
+        };
+        reader.readAsDataURL(this.files[0]);
+    });
+}
 
-//     // تفريغ الحقول
-//     document.getElementById("student_name").value = "";
-//     document.getElementById("student_number").value = "";
-//     document.getElementById("avatarPreview").innerHTML =
-//         `<i class="fa-solid fa-user"></i>`;
-//     selectedImage = "";
-// }
+// ===============================
+// فتح الكاميرا
+// ===============================
+function openCamera() {
+    camera.hidden = false;
+
+    navigator.mediaDevices.getUserMedia({ video: true })
+        .then(stream => {
+            cameraStream = stream;
+            camera.srcObject = stream;
+            captureBox.style.display = "flex";
+        })
+        .catch(() => {
+            alert("❌ لم يتم السماح باستخدام الكاميرا");
+        });
+}
+
+// ===============================
+// التقاط صورة من الكاميرا
+// ===============================
+function capturePhoto() {
+    if (!cameraStream) return;
+
+    snapshot.width  = camera.videoWidth;
+    snapshot.height = camera.videoHeight;
+
+    const ctx = snapshot.getContext("2d");
+    ctx.drawImage(camera, 0, 0);
+
+    const imageData = snapshot.toDataURL("image/png");
+    avatarPreview.innerHTML = `<img src="${imageData}">`;
+
+    fetch(imageData)
+        .then(res => res.blob())
+        .then(blob => {
+            const file = new File([blob], "camera.png", { type: "image/png" });
+            const dt = new DataTransfer();
+            dt.items.add(file);
+            imageInput.files = dt.files;
+        });
+
+    cameraStream.getTracks().forEach(track => track.stop());
+    cameraStream = null;
+
+    camera.hidden = true;
+    captureBox.style.display = "none";
+}
+// ===============================
+// إغلاق الكاميرا يدويًا
+// ===============================
+function closeCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
+
+    camera.hidden = true;
+    captureBox.style.display = "none";
+}
+
