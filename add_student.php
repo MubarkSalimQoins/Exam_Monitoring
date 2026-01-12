@@ -22,7 +22,7 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="students.css">
-<link rel="stylesheet" href="close.css">
+<!-- <link rel="stylesheet" href="close.css"> -->
 </head>
 <body>
 
@@ -71,7 +71,7 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
             <!-- زر التقاط صورة -->
             <div class="buttons" id="captureBox" style="display:none; margin-top:8px; gap:8px;">
     
-          <button type="button" onclick="capturePhoto()" class="btn-camera">
+          <button type="button" onclick="capturePhoto()" class="btn-cameraa">
         <i class="fa fa-camera-retro"></i> التقاط صورة
            </button>
 
@@ -119,9 +119,15 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         </form>
     </div>
-
+               <!-- صندوق البحث -->
     <!-- ===== جدول الطلاب ===== -->
-    <div class="table-card">
+    <div  class="table-card">
+      <div class="search-box">
+    <input type="text" id="studentSearch" placeholder="ابحث بالاسم أو رقم القيد...">
+    <i class="fa fa-search"></i>
+</div>
+
+
         <table>
             <thead>
                 <tr>
@@ -165,5 +171,6 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
 </div>
 <script src="students.js"></script>
+<script src="search.js"></script>
 </body>
 </html>
