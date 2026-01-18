@@ -1,4 +1,23 @@
 // ===============================
+// ===============================
+// دالة عرض الرسائل داخل .student-card
+// ===============================
+// ===============================
+// دالة عرض الرسائل داخل .student-card
+// ===============================
+function showAlert(message, type) {
+    const div = document.createElement("div");
+    div.className = "alert " + type;
+    div.textContent = message;
+
+    document.querySelector(".student-card").prepend(div);
+
+    setTimeout(() => {
+        div.style.opacity = "0";
+        setTimeout(() => div.remove(), 400);
+    }, 3000);
+}
+
 // رسائل التنبيه (تختفي بعد 3 ثواني)
 // ===============================
 document.addEventListener("DOMContentLoaded", function () {
@@ -107,16 +126,3 @@ function capturePhoto() {
     camera.hidden = true;
     captureBox.style.display = "none";
 }
-// ===============================
-// إغلاق الكاميرا يدويًا
-// ===============================
-function closeCamera() {
-    if (cameraStream) {
-        cameraStream.getTracks().forEach(track => track.stop());
-        cameraStream = null;
-    }
-
-    camera.hidden = true;
-    captureBox.style.display = "none";
-}
-
