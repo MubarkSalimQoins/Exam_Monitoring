@@ -5,16 +5,32 @@
 // ===============================
 // دالة عرض الرسائل داخل .student-card
 // ===============================
-function showAlert(message, type) {
-    const div = document.createElement("div");
-    div.className = "alert " + type;
-    div.textContent = message;
+function showAlert(message, type = "success") {
 
-    document.querySelector(".student-card").prepend(div);
+    // إنشاء الحاوية لو مش موجودة
+    let container = document.querySelector(".toast-container");
+    if (!container) {
+        container = document.createElement("div");
+        container.className = "toast-container";
+        document.body.appendChild(container);
+    }
 
+    // إنشاء الرسالة
+    const toast = document.createElement("div");
+    toast.className = `toast ${type}`;
+
+    const icon = type === "success"
+        ? '<i class="fa fa-circle-check"></i>'
+        : '<i class="fa fa-circle-xmark"></i>';
+
+    toast.innerHTML = `${icon}<span>${message}</span>`;
+
+    container.appendChild(toast);
+
+    // الإخفاء بعد 3 ثواني
     setTimeout(() => {
-        div.style.opacity = "0";
-        setTimeout(() => div.remove(), 400);
+        toast.style.animation = "toastOut 0.4s ease forwards";
+        setTimeout(() => toast.remove(), 400);
     }, 3000);
 }
 

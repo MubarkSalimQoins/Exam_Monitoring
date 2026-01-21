@@ -1,6 +1,15 @@
 <?php
 session_start();
 require "db.php";
+//من اجل يسترجع القيم مثلا رقم القيد اقل من ثمانيه احرف يطبع رساله ويمسح حقل القيد فقط
+$old = $_SESSION['old'] ?? [];
+unset($_SESSION['old']);
+
+// من اجل تلوين حقل القيد في حاله الخطا
+// $old = $_SESSION['old'] ?? [];
+// $errorField = $_SESSION['error_field'] ?? null;
+
+// unset($_SESSION['old'], $_SESSION['error_field']);
 
 /* جلب الطلاب */
 $stmt = $pdo->query("
@@ -20,8 +29,21 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
 <link rel="stylesheet" href="students.css">
 <link rel="stylesheet" href="alerts.css">
+<link rel="stylesheet" href="coo.css">
 </head>
 <body>
+<!-- ✅  الرسائل  مثل تم حفظ الطالب او تكرار رقم القيد-->
+<?php if (!empty($_SESSION['flash'])): ?>
+<script>
+document.addEventListener("DOMContentLoaded", function () {
+    showAlert(
+        <?= json_encode($_SESSION['flash']['message']) ?>,
+        <?= json_encode($_SESSION['flash']['type']) ?>
+    );
+});
+</script>
+<?php unset($_SESSION['flash']); endif; ?>
+
 
 <div class="container">
 
@@ -29,22 +51,6 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <div class="student-card">
 
 <h3>إضافة طالب</h3>
-
-<!-- ✅ الرسائل -->
-<?php if (!empty($_SESSION["error"])): ?>
-    <div class="alert error">
-        <i class="fa fa-circle-xmark"></i>
-        <?= htmlspecialchars($_SESSION["error"]); unset($_SESSION["error"]); ?>
-    </div>
-<?php endif; ?>
-
-<?php if (!empty($_SESSION["success"])): ?>
-    <div class="alert success">
-        <i class="fa fa-circle-check"></i>
-        <?= htmlspecialchars($_SESSION["success"]); unset($_SESSION["success"]); ?>
-    </div>
-<?php endif; ?>
-
 <form action="save_student.php" method="POST" enctype="multipart/form-data">
 
     <div class="avatar" id="avatarPreview">
@@ -62,7 +68,8 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         <button type="button" onclick="openUpload()" class="btn-upload">
             <i class="fa fa-upload"></i> رفع صورة
-        </button>
+            </button>
+
     </div>
 
     <!-- التقاط / إغلاق -->
@@ -78,32 +85,47 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
     <div class="form-group">
         <label>اسم الطالب</label>
-        <input type="text" name="name" required>
+        <input type="text" name="name" required  value="<?= htmlspecialchars($old['name'] ?? '') ?>">
+
     </div>
 
     <div class="form-group">
         <label>رقم القيد</label>
-        <input type="text" name="student_number" required>
+<div class="form-group">
+    <label>رقم القيد</label>
+    <input 
+        type="text"
+        name="student_number"
+        class="<?= $errorField === 'student_number' ? 'input-error' : '' ?>"
+        maxlength="8"
+        autocomplete="off"
+        required
+    >
+</div>
+
+
     </div>
 
     <div class="form-group">
         <label>المستوى</label>
         <select name="level" required>
-            <option value="">اختر المستوى</option>
-            <option>الأول</option>
-            <option>الثاني</option>
-            <option>الثالث</option>
-            <option>الرابع</option>
-        </select>
+    <option value="">اختر المستوى</option>
+    <option <?= ($old['level'] ?? '') === 'الأول' ? 'selected' : '' ?>>الأول</option>
+    <option <?= ($old['level'] ?? '') === 'الثاني' ? 'selected' : '' ?>>الثاني</option>
+    <option <?= ($old['level'] ?? '') === 'الثالث' ? 'selected' : '' ?>>الثالث</option>
+    <option <?= ($old['level'] ?? '') === 'الرابع' ? 'selected' : '' ?>>الرابع</option>
+</select>
+
     </div>
 
     <div class="form-group">
         <label>التخصص</label>
         <select name="major" required>
-            <option value="">اختر التخصص</option>
-            <option value="IT">IT</option>
-            <option value="CS">CS</option>
-        </select>
+    <option value="">اختر التخصص</option>
+    <option value="IT" <?= ($old['major'] ?? '') === 'IT' ? 'selected' : '' ?>>IT</option>
+    <option value="CS" <?= ($old['major'] ?? '') === 'CS' ? 'selected' : '' ?>>CS</option>
+</select>
+
     </div>
 
     <button type="submit" class="btn-save">
@@ -124,7 +146,7 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <table>
 <thead>
 <tr>
-    <th>#</th>
+    <th>رقم الطالب</th>
     <th>الاسم</th>
     <th>رقم القيد</th>
     <th>المستوى</th>
@@ -174,5 +196,6 @@ $students = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <script src="students.js"></script>
 <script src="search.js"></script>
 <script src="delete.js"></script>
+<script src="main.js"></script>
 </body>
 </html>

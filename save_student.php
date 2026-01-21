@@ -21,6 +21,26 @@ $name           = trim($_POST["name"] ?? "");
 $student_number = trim($_POST["student_number"] ?? "");
 $level          = trim($_POST["level"] ?? "");
 $major          = trim($_POST["major"] ?? "");
+// التحقق أن رقم القيد 8 أرقام فقط
+if (!preg_match('/^\d{8}$/', $student_number)) {
+    $_SESSION['flash'] = [
+        'type'    => 'error',
+        'message' => '❌ رقم القيد يجب أن يتكون من 8 أرقام فقط'
+    ];
+
+    // حفظ القيم الصحيحة فقط
+    $_SESSION['old'] = [
+        'name'  => $name,
+        'level' => $level,
+        'major' => $major
+        // لا نحفظ رقم القيد ❌
+    ];
+    $_SESSION['error_field'] = 'student_number';
+    header("Location: add_student.php");
+    exit;
+}
+
+
 
 /*
 ----------------------------------
@@ -54,9 +74,17 @@ if (
 */
 $check = $pdo->prepare("SELECT student_id FROM students WHERE student_number = ?");
 $check->execute([$student_number]);
-
+//تكرار رقم القيد موقف استبدلناه بلي تحت
+// if ($check->rowCount() > 0) {
+//     $_SESSION["error"] = "❌ رقم القيد مكرر، الرجاء إدخال رقم آخر";
+//     header("Location: add_student.php");
+//     exit;
+// }
 if ($check->rowCount() > 0) {
-    $_SESSION["error"] = "❌ رقم القيد مكرر، الرجاء إدخال رقم آخر";
+    $_SESSION['flash'] = [
+        'type'    => 'error',
+        'message' => '❌ رقم القيد مستخدم مسبقًا، الرجاء إدخال رقم آخر'
+    ];
     header("Location: add_student.php");
     exit;
 }
@@ -129,6 +157,9 @@ $stmt->execute([
 8️⃣ رسالة نجاح + الرجوع لنفس الصفحة
 ----------------------------------
 */
-$_SESSION["success"] = "✅ تم حفظ الطالب بنجاح";
+$_SESSION['flash'] = [
+    'type' => 'success',
+    'message' => 'تم حفظ الطالب بنجاح'
+];
 header("Location: add_student.php");
 exit;

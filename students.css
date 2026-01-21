@@ -196,24 +196,8 @@ td {
 
 
 /* رسائل */
-.alert {
-    padding: 12px 15px;
-    border-radius: 8px;
-    margin-bottom: 12px;
-    font-size: 14px;
-}
+/* ===== Toast Container ===== */
 
-.alert.error {
-    background: #fde2e2;
-    color: #b02a37;
-    border: 1px solid #f5c2c7;
-}
-
-.alert.success {
-    background: #e6f4ea;
-    color: #146c43;
-    border: 1px solid #badbcc;
-}
 /* من هنا ازرار الاجراءات التعديل والحذف */
 .actions {
     display: flex;
@@ -314,4 +298,18 @@ mark {
   border-radius: 4px;
   font-weight: 600;
 }
-/* رسائل الصندوق */
+/* حقل به خطأ  مثل رقم القيد*/
+.input-error {
+    border: 2px solid #dc3545 !important;
+    background: #fff5f5;
+    animation: shake 0.3s ease;
+}
+
+/* أنميشن خفيف */
+@keyframes shake {
+    0%   { transform: translateX(0); }
+    25%  { transform: translateX(-4px); }
+    50%  { transform: translateX(4px); }
+    75%  { transform: translateX(-4px); }
+    100% { transform: translateX(0); }
+}
