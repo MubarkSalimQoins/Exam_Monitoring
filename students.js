@@ -5,35 +5,6 @@
 // ===============================
 // دالة عرض الرسائل داخل .student-card
 // ===============================
-function showAlert(message, type = "success") {
-
-    // إنشاء الحاوية لو مش موجودة
-    let container = document.querySelector(".toast-container");
-    if (!container) {
-        container = document.createElement("div");
-        container.className = "toast-container";
-        document.body.appendChild(container);
-    }
-
-    // إنشاء الرسالة
-    const toast = document.createElement("div");
-    toast.className = `toast ${type}`;
-
-    const icon = type === "success"
-        ? '<i class="fa fa-circle-check"></i>'
-        : '<i class="fa fa-circle-xmark"></i>';
-
-    toast.innerHTML = `${icon}<span>${message}</span>`;
-
-    container.appendChild(toast);
-
-    // الإخفاء بعد 3 ثواني
-    setTimeout(() => {
-        toast.style.animation = "toastOut 0.4s ease forwards";
-        setTimeout(() => toast.remove(), 400);
-    }, 3000);
-}
-
 // رسائل التنبيه (تختفي بعد 3 ثواني)
 // ===============================
 document.addEventListener("DOMContentLoaded", function () {
@@ -140,5 +111,17 @@ function capturePhoto() {
     cameraStream = null;
 
     camera.hidden = true;
+    captureBox.style.display = "none";
+}
+//  * إغلاق الكاميرا
+function closeCamera() {
+    if (cameraStream) {
+        cameraStream.getTracks().forEach(track => track.stop());
+        cameraStream = null;
+    }
+
+    camera.srcObject = null;
+    camera.hidden = true;
+
     captureBox.style.display = "none";
 }

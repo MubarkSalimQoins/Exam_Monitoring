@@ -1,15 +1,11 @@
 <?php
 session_start();
-require "db.php";
-//من اجل يسترجع القيم مثلا رقم القيد اقل من ثمانيه احرف يطبع رساله ويمسح حقل القيد فقط
+/* من اجل تلوين الحقل اذا كان اقل من 8 ارقام مع الحفاظ ع بقيه القيم*/
 $old = $_SESSION['old'] ?? [];
-unset($_SESSION['old']);
+$errorField = $_SESSION['error_field'] ?? null;
 
-// من اجل تلوين حقل القيد في حاله الخطا
-// $old = $_SESSION['old'] ?? [];
-// $errorField = $_SESSION['error_field'] ?? null;
-
-// unset($_SESSION['old'], $_SESSION['error_field']);
+unset($_SESSION['old'], $_SESSION['error_field']);
+require "db.php";
 
 /* جلب الطلاب */
 $stmt = $pdo->query("
@@ -85,26 +81,28 @@ document.addEventListener("DOMContentLoaded", function () {
 
     <div class="form-group">
         <label>اسم الطالب</label>
-        <input type="text" name="name" required  value="<?= htmlspecialchars($old['name'] ?? '') ?>">
+        <input type="text" name="name" required  
+        placeholder="يجب ان يكون الاسم ع الاقل 4 اسماء مع مسافه "
+        value="<?= htmlspecialchars($old['name'] ?? '') ?>"
+       class="<?= $errorField === 'name' ? 'input-error' : '' ?>"
+        >
 
     </div>
 
     <div class="form-group">
         <label>رقم القيد</label>
-<div class="form-group">
-    <label>رقم القيد</label>
     <input 
         type="text"
         name="student_number"
-        class="<?= $errorField === 'student_number' ? 'input-error' : '' ?>"
+          value="<?= htmlspecialchars($old['student_number'] ?? '') ?>"
+          class="<?= ($errorField === 'student_number') ? 'input-error' : '' ?>"
         maxlength="8"
         autocomplete="off"
-        required
+        required 
+        placeholder="يجب ان يكون رقم القيد(8 ارقام فقط)"
+
     >
 </div>
-
-
-    </div>
 
     <div class="form-group">
         <label>المستوى</label>

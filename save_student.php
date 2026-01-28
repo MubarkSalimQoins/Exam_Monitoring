@@ -21,11 +21,36 @@ $name           = trim($_POST["name"] ?? "");
 $student_number = trim($_POST["student_number"] ?? "");
 $level          = trim($_POST["level"] ?? "");
 $major          = trim($_POST["major"] ?? "");
+
+$name = trim($name);                     // حذف الفراغات من البداية والنهاية
+$name = preg_replace('/\s+/', ' ', $name); // مسافة واحدة فقط بين الأسماء
+//منشان الاسم يتكون من اربعه اسماء فقط مع مسافه بين كل اسم
+// التحقق أن الاسم يحتوي على 4 كلمات على الأقل (يدعم العربية)
+$nameParts = explode(' ', $name);
+
+if (count($nameParts) < 4) {
+    $_SESSION['flash'] = [
+        'type'    => 'error',
+        'message' => '❌ الاسم يجب أن يتكون من أربعة أسماء على الأقل مع مسافة واحدة بين كل اسم'
+    ];
+
+    $_SESSION['old'] = [
+        'student_number' => $student_number,
+        'level'          => $level,
+        'major'          => $major
+    ];
+
+    $_SESSION['error_field'] = 'name';
+    header("Location: add_student.php");
+    exit;
+}
+
+
 // التحقق أن رقم القيد 8 أرقام فقط
 if (!preg_match('/^\d{8}$/', $student_number)) {
     $_SESSION['flash'] = [
         'type'    => 'error',
-        'message' => '❌ رقم القيد يجب أن يتكون من 8 أرقام فقط'
+        'message' => '❌ رقم القيد يجب أن يتكون من 8 أرقام فقط ولايوجد احرف'
     ];
 
     // حفظ القيم الصحيحة فقط
@@ -83,8 +108,19 @@ $check->execute([$student_number]);
 if ($check->rowCount() > 0) {
     $_SESSION['flash'] = [
         'type'    => 'error',
-        'message' => '❌ رقم القيد مستخدم مسبقًا، الرجاء إدخال رقم آخر'
+        'message' => '❌ رقم القيد مكرر، الرجاء إدخال رقم آخر'
     ];
+
+    // نحتفظ بكل القيم ما عدا رقم القيد
+    $_SESSION['old'] = [
+        'name'  => $name,
+        'level' => $level,
+        'major' => $major
+    ];
+
+    // تحديد الحقل الذي فيه الخطأ
+    $_SESSION['error_field'] = 'student_number';
+
     header("Location: add_student.php");
     exit;
 }
