@@ -1,16 +1,29 @@
-// ===============================
-// ===============================
-// دالة عرض الرسائل داخل .student-card
-// ===============================
-// ===============================
-// دالة عرض الرسائل داخل .student-card
-// ===============================
-// رسائل التنبيه (تختفي بعد 3 ثواني)
-// ===============================
+// ============================================
+// add_student.js
+// خاص بإضافة طالب فقط (لا يعمل في التعديل)
+// ============================================
+
 document.addEventListener("DOMContentLoaded", function () {
 
-    const alerts = document.querySelectorAll(".alert");
+    // ===============================
+    // التحقق: هل نحن في صفحة الإضافة؟
+    // ===============================
+    const addForm = document.getElementById("addStudentForm");
+    if (!addForm) return; // 🔥 خروج نهائي لو صفحة تعديل
 
+    // ===============================
+    // عناصر الإضافة
+    // ===============================
+    const imageInputAdd = document.getElementById("imageInput");
+    const avatarPreview = document.getElementById("avatarPreview");
+    const camera        = document.getElementById("camera");
+    const snapshot      = document.getElementById("snapshot");
+    const captureBox    = document.getElementById("captureBox");
+
+    // ===============================
+    // رسائل التنبيه
+    // ===============================
+    const alerts = document.querySelectorAll(".alert");
     if (alerts.length > 0) {
         setTimeout(() => {
             alerts.forEach(alert => {
@@ -21,41 +34,27 @@ document.addEventListener("DOMContentLoaded", function () {
     }
 
     // ===============================
-    // منع الحفظ بدون صورة
+    // منع الإرسال بدون صورة (إضافة فقط)
     // ===============================
-    const form = document.querySelector("form");
-    const imageInput = document.getElementById("imageInput");
+//     addForm.addEventListener("submit", function (e) {
 
-    if (form) {
-        form.addEventListener("submit", function (e) {
-            if (!imageInput || imageInput.files.length === 0) {
-                e.preventDefault();
-                alert("❌ يجب إضافة صورة للطالب");
-            }
-        });
-    }
-});
+//     if (!imageInputAdd || imageInputAdd.files.length === 0) {
+//         e.preventDefault(); // يمنع الإرسال
+//         alert("❌ يجب إضافة صورة للطالب");
+//         return false; // ⬅️ هذا المهم
+//     }
 
-// ===============================
-// متغيرات عامة للكاميرا
-// ===============================
-let cameraStream = null;
+//   });
 
-const imageInput   = document.getElementById("imageInput");
-const avatarPreview = document.getElementById("avatarPreview");
-const camera       = document.getElementById("camera");
-const snapshot     = document.getElementById("snapshot");
-const captureBox   = document.getElementById("captureBox");
 
-// ===============================
-// رفع صورة من الجهاز
-// ===============================
-function openUpload() {
-    imageInput.click();
-}
+    // ===============================
+    // رفع صورة من الجهاز
+    // ===============================
+    window.openUpload = function () {
+        imageInputAdd.click();
+    };
 
-if (imageInput) {
-    imageInput.addEventListener("change", function () {
+    imageInputAdd.addEventListener("change", function () {
         if (!this.files.length) return;
 
         const reader = new FileReader();
@@ -64,64 +63,68 @@ if (imageInput) {
         };
         reader.readAsDataURL(this.files[0]);
     });
-}
 
-// ===============================
-// فتح الكاميرا
-// ===============================
-function openCamera() {
-    camera.hidden = false;
+    // ===============================
+    // متغيرات الكاميرا
+    // ===============================
+    let cameraStream = null;
 
-    navigator.mediaDevices.getUserMedia({ video: true })
-        .then(stream => {
-            cameraStream = stream;
-            camera.srcObject = stream;
-            captureBox.style.display = "flex";
-        })
-        .catch(() => {
-            alert("❌ لم يتم السماح باستخدام الكاميرا");
-        });
-}
+    // ===============================
+    // فتح الكاميرا
+    // ===============================
+    window.openCamera = function () {
+        camera.hidden = false;
 
-// ===============================
-// التقاط صورة من الكاميرا
-// ===============================
-function capturePhoto() {
-    if (!cameraStream) return;
+        navigator.mediaDevices.getUserMedia({ video: true })
+            .then(stream => {
+                cameraStream = stream;
+                camera.srcObject = stream;
+                captureBox.style.display = "flex";
+            })
+            .catch(() => {
+                alert("❌ لم يتم السماح باستخدام الكاميرا");
+            });
+    };
 
-    snapshot.width  = camera.videoWidth;
-    snapshot.height = camera.videoHeight;
+    // ===============================
+    // التقاط صورة
+    // ===============================
+    window.capturePhoto = function () {
+        if (!cameraStream) return;
 
-    const ctx = snapshot.getContext("2d");
-    ctx.drawImage(camera, 0, 0);
+        snapshot.width  = camera.videoWidth;
+        snapshot.height = camera.videoHeight;
 
-    const imageData = snapshot.toDataURL("image/png");
-    avatarPreview.innerHTML = `<img src="${imageData}">`;
+        const ctx = snapshot.getContext("2d");
+        ctx.drawImage(camera, 0, 0);
 
-    fetch(imageData)
-        .then(res => res.blob())
-        .then(blob => {
-            const file = new File([blob], "camera.png", { type: "image/png" });
-            const dt = new DataTransfer();
-            dt.items.add(file);
-            imageInput.files = dt.files;
-        });
+        const imageData = snapshot.toDataURL("image/png");
+        avatarPreview.innerHTML = `<img src="${imageData}">`;
 
-    cameraStream.getTracks().forEach(track => track.stop());
-    cameraStream = null;
+        fetch(imageData)
+            .then(res => res.blob())
+            .then(blob => {
+                const file = new File([blob], "camera.png", { type: "image/png" });
+                const dt = new DataTransfer();
+                dt.items.add(file);
+                imageInputAdd.files = dt.files;
+            });
 
-    camera.hidden = true;
-    captureBox.style.display = "none";
-}
-//  * إغلاق الكاميرا
-function closeCamera() {
-    if (cameraStream) {
-        cameraStream.getTracks().forEach(track => track.stop());
-        cameraStream = null;
-    }
+        closeCamera();
+    };
 
-    camera.srcObject = null;
-    camera.hidden = true;
+    // ===============================
+    // إغلاق الكاميرا
+    // ===============================
+    window.closeCamera = function () {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(track => track.stop());
+            cameraStream = null;
+        }
 
-    captureBox.style.display = "none";
-}
+        camera.srcObject = null;
+        camera.hidden = true;
+        captureBox.style.display = "none";
+    };
+
+});

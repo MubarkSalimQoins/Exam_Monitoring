@@ -87,7 +87,7 @@ if (
     !isset($_FILES["student_image"]) ||
     $_FILES["student_image"]["error"] !== UPLOAD_ERR_OK
 ) {
-    $_SESSION["error"] = "❌ يجب عليك إضافة صورة للطالب";
+    $_SESSION["error"] = "❌  يجب عليك إضافة صورة للطالب قبل الحفظ";
     header("Location: add_student.php");
     exit;
 }
