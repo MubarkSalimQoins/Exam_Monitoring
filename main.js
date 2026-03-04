@@ -1,3 +1,4 @@
+//main
 function showAlert(message, type = "success") {
 
     // إنشاء الحاوية لو مش موجودة
