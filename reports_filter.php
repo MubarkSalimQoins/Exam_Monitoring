@@ -98,10 +98,13 @@ body{
 
             <div class="col-md-2">
                 <label class="form-label">صيغة التقرير</label>
-                <select class="form-select">
+                <!-- <select class="form-select">
                     <option>PDF</option>
-                    <option>Excel</option>
                     <option>CSV</option>
+                </select> -->
+                <select class="form-select" name="format">
+                     <option value="pdf">PDF</option>
+                    <option value="csv">CSV</option>
                 </select>
             </div>
 
@@ -124,9 +127,13 @@ body{
 
         <!-- أزرار التحكم -->
         <div class="d-flex justify-content-between flex-wrap gap-2 mb-3">
-            <button class="btn btn-success btn-action">
+            <!-- <button class="btn btn-success btn-action">
                 <i class="fa-solid fa-file-export"></i> إصدار التقارير
-            </button>
+            </button> -->
+               <a href="export_reports.php?from=<?= $from ?>&to=<?= $to ?>&format=<?= $_GET['format'] ?? 'pdf' ?>"
+                class="btn btn-success btn-action">
+                <i class="fa-solid fa-file-export"></i> إصدار التقارير
+                 </a>
 
             <button class="btn btn-outline-danger btn-action" onclick="clearTable()">
                 <i class="fa-solid fa-trash"></i> حذف من الواجهة
