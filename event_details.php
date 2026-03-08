@@ -53,7 +53,7 @@ if (!$event) {
 
         body {
             font-family: 'Cairo', sans-serif;
-            background: #0f172a;
+            background: linear-gradient(135deg, #2f6fed 0%, #1e5dd8 100%);
             min-height: 100vh;
             padding: 40px 20px;
             direction: rtl;
@@ -70,8 +70,8 @@ if (!$event) {
             width: 100%;
             height: 100%;
             background: 
-                linear-gradient(90deg, rgba(13, 110, 253, 0.03) 1px, transparent 1px),
-                linear-gradient(rgba(13, 110, 253, 0.03) 1px, transparent 1px);
+                linear-gradient(90deg, rgba(255, 255, 255, 0.03) 1px, transparent 1px),
+                linear-gradient(rgba(255, 255, 255, 0.03) 1px, transparent 1px);
             background-size: 50px 50px;
             pointer-events: none;
             z-index: 0;
@@ -85,7 +85,7 @@ if (!$event) {
             right: -200px;
             width: 600px;
             height: 600px;
-            background: radial-gradient(circle, rgba(13, 110, 253, 0.15), transparent 70%);
+            background: radial-gradient(circle, rgba(255, 255, 255, 0.1), transparent 70%);
             border-radius: 50%;
             animation: float 20s infinite ease-in-out;
             z-index: 0;
@@ -106,15 +106,15 @@ if (!$event) {
 
         /* الكارد الرئيسي */
         .card {
-            background: rgba(30, 41, 59, 0.6);
+            background: rgba(255, 255, 255, 0.95);
             backdrop-filter: blur(20px);
             -webkit-backdrop-filter: blur(20px);
             padding: 40px;
             border-radius: 25px;
             box-shadow: 
-                0 25px 70px rgba(0, 0, 0, 0.5),
-                inset 0 1px 0 rgba(255, 255, 255, 0.1);
-            border: 1px solid rgba(13, 110, 253, 0.2);
+                0 25px 70px rgba(0, 0, 0, 0.3),
+                inset 0 1px 0 rgba(255, 255, 255, 0.5);
+            border: 1px solid rgba(255, 255, 255, 0.5);
             animation: fadeInUp 0.8s ease;
         }
 
@@ -131,12 +131,12 @@ if (!$event) {
 
         /* العنوان */
         h2 {
-            color: white;
+            color: #1e293b;
             font-size: 2rem;
             font-weight: 700;
             margin-bottom: 30px;
             padding-bottom: 20px;
-            border-bottom: 2px solid rgba(13, 110, 253, 0.3);
+            border-bottom: 2px solid rgba(47, 111, 237, 0.3);
             position: relative;
         }
 
@@ -147,32 +147,32 @@ if (!$event) {
             right: 0;
             width: 100px;
             height: 2px;
-            background: #0d6efd;
-            box-shadow: 0 0 10px #0d6efd;
+            background: #2f6fed;
+            box-shadow: 0 0 10px #2f6fed;
         }
 
         /* معلومات الحدث */
         p {
             margin: 20px 0;
             font-size: 16px;
-            color: #cbd5e1;
+            color: #475569;
             display: flex;
             align-items: center;
             padding: 15px;
-            background: rgba(15, 23, 42, 0.5);
+            background: rgba(47, 111, 237, 0.05);
             border-radius: 12px;
-            border-right: 4px solid #0d6efd;
+            border-right: 4px solid #2f6fed;
             transition: all 0.3s ease;
         }
 
         p:hover {
-            background: rgba(13, 110, 253, 0.1);
+            background: rgba(47, 111, 237, 0.1);
             transform: translateX(-5px);
-            box-shadow: 0 5px 15px rgba(13, 110, 253, 0.2);
+            box-shadow: 0 5px 15px rgba(47, 111, 237, 0.2);
         }
 
         p strong {
-            color: #0d6efd;
+            color: #2f6fed;
             font-weight: 700;
             min-width: 120px;
             display: inline-block;
@@ -217,15 +217,15 @@ if (!$event) {
             width: 100%;
             margin-top: 25px;
             border-radius: 16px;
-            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.5);
-            border: 2px solid rgba(13, 110, 253, 0.3);
+            box-shadow: 0 15px 40px rgba(0, 0, 0, 0.3);
+            border: 2px solid rgba(47, 111, 237, 0.3);
             transition: all 0.4s ease;
         }
 
         img:hover, video:hover {
             transform: scale(1.02);
-            box-shadow: 0 20px 50px rgba(13, 110, 253, 0.4);
-            border-color: #0d6efd;
+            box-shadow: 0 20px 50px rgba(47, 111, 237, 0.4);
+            border-color: #2f6fed;
         }
 
         /* زر العودة */
@@ -235,12 +235,12 @@ if (!$event) {
             gap: 10px;
             margin-top: 30px;
             padding: 14px 28px;
-            background: rgba(13, 110, 253, 0.2);
-            color: #0d6efd;
+            background: rgba(47, 111, 237, 0.2);
+            color: #2f6fed;
             text-decoration: none;
             font-weight: 700;
             border-radius: 12px;
-            border: 2px solid #0d6efd;
+            border: 2px solid #2f6fed;
             transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
             font-size: 15px;
             position: relative;
@@ -254,7 +254,7 @@ if (!$event) {
             left: 50%;
             width: 0;
             height: 0;
-            background: rgba(13, 110, 253, 0.3);
+            background: rgba(47, 111, 237, 0.3);
             border-radius: 50%;
             transform: translate(-50%, -50%);
             transition: width 0.6s, height 0.6s;
@@ -266,10 +266,10 @@ if (!$event) {
         }
 
         a:hover {
-            background: #0d6efd;
+            background: #2f6fed;
             color: white;
             transform: translateX(5px);
-            box-shadow: 0 10px 30px rgba(13, 110, 253, 0.5);
+            box-shadow: 0 10px 30px rgba(47, 111, 237, 0.5);
         }
 
         a i {
@@ -342,9 +342,9 @@ if (!$event) {
         .media-container {
             margin-top: 30px;
             padding: 20px;
-            background: rgba(15, 23, 42, 0.5);
+            background: rgba(47, 111, 237, 0.05);
             border-radius: 16px;
-            border: 1px solid rgba(13, 110, 253, 0.2);
+            border: 1px solid rgba(47, 111, 237, 0.2);
         }
 
         .media-container img,
