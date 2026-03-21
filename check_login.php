@@ -53,7 +53,7 @@ if ($user["role"] === "supervisor") {
 
 } elseif ($user["role"] === "admin") {
 
-    header("Location: admin/dashboard.php");
+    header("Location: notifications_admin.php");
     exit;
 
 } else {

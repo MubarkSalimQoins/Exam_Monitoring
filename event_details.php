@@ -1,5 +1,6 @@
 <?php
-require "auth_supervisor.php"; // 🔐 استدعاء ملف الحماية
+// require "auth_supervisor.php"; // 🔐 استدعاء ملف الحماية
+// require "auth_admin.php";
 require "db.php";              // 📡 الاتصال بقاعدة البيانات
 
 /* =========================
@@ -398,9 +399,10 @@ if (!$event) {
                 <video controls>
                     <source src="<?= htmlspecialchars($event["video_path"]) ?>" type="video/mp4">
                 </video>
+                
             </div>
             <?php endif; ?>
-
+            
             <a href="notifications.php">
                 <i class="fa-solid fa-arrow-left"></i>
                 العودة للإشعارات

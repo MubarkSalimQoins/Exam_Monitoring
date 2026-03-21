@@ -2,7 +2,8 @@
 session_start();
 require "db.php";
 
-if ($_SESSION["role"] !== "supervisor") {
+/* 🔐 التحقق من صلاحية المدير */
+if (!isset($_SESSION["role"]) || $_SESSION["role"] !== "admin") {
 ?>
 <!DOCTYPE html>
 <html lang="ar">
@@ -42,8 +43,8 @@ if ($_SESSION["role"] !== "supervisor") {
 <body>
     <div class="box">
         <h2>❌ ليس لديك صلاحية</h2>
-        <p>ليس لديك صلاحية الدخول إلى هذه الصفحة</p>
-        <p>سيتم إعادتك إلى صفحة تسجيل الدخول...</p>
+        <p>هذه الصفحة مخصصة للمدير فقط</p>
+        <p>سيتم إعادتك إلى تسجيل الدخول...</p>
     </div>
 </body>
 </html>
@@ -51,6 +52,7 @@ if ($_SESSION["role"] !== "supervisor") {
     exit;
 }
 
+/* 📊 جلب البيانات */
 $sql = "SELECT 
     ce.event_id,
     ce.status,
@@ -67,6 +69,7 @@ $stmt = $pdo->prepare($sql);
 $stmt->execute();
 $events = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+/* 🟢 عرض الحالة */
 function renderStatus($status) {
     if ($status === "confirmed") {
         return '<span class="status confirmed">تم التأكيد</span>';
@@ -82,12 +85,14 @@ function renderStatus($status) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>الإشعارات</title>
+    <title>إشعارات المدير</title>
+
     <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
     <link rel="stylesheet" href="notifications.css">
 </head>
 <body>
+
     <div class="hamburger-btn" onclick="toggleSidebar()">
         <span></span>
         <span></span>
@@ -104,8 +109,9 @@ function renderStatus($status) {
             <h3 class="sidebar-title">جامعة شبوة</h3>
             <p class="sidebar-subtitle">نظام مراقبة الاختبارات</p>
         </div>
+
         <div class="sidebar-menu">
-            <a href="notifications.php">
+            <a href="notifications_admin.php">
                 <i class="fa-solid fa-bell"></i>
                 <span>الإشعارات</span>
             </a>
@@ -125,8 +131,8 @@ function renderStatus($status) {
     </div>
 
     <div class="container">
-        <h2> 📢 إشعارات الغش (المراقب)</h2>
-        
+        <h2>👑 إشعارات الغش (المدير)</h2>
+
         <div class="table-card">
             <table>
                 <tr>
@@ -137,13 +143,13 @@ function renderStatus($status) {
                     <th>الوقت</th>
                     <th>الإجراءات</th>
                 </tr>
-                
+
                 <?php if (!$events): ?>
                 <tr>
                     <td colspan="6" class="no-data">لا توجد إشعارات</td>
                 </tr>
                 <?php endif; ?>
-                
+
                 <?php foreach ($events as $event): ?>
                 <tr>
                     <td><?= htmlspecialchars($event["student_name"]) ?></td>
@@ -151,21 +157,19 @@ function renderStatus($status) {
                     <td><?= $event["confidence_score"] ?>%</td>
                     <td><?= renderStatus($event["status"]) ?></td>
                     <td><?= $event["event_time"] ?></td>
+
                     <td>
-                        <?php if ($event["status"] === "suspected"): ?>
-                        <form action="confirm_event.php" method="POST">
+                        <!-- 🔥 المدير يقدر يعدل دائماً -->
+                        <form action="confirm_event_admin.php" method="POST">
                             <input type="hidden" name="event_id" value="<?= $event["event_id"] ?>">
                             <button class="btn btn-confirm">تأكيد</button>
                         </form>
-                        <form action="reject_event.php" method="POST">
+
+                        <form action="reject_event_admin.php" method="POST">
                             <input type="hidden" name="event_id" value="<?= $event["event_id"] ?>">
                             <button class="btn btn-reject">إلغاء</button>
                         </form>
-                        <?php else: ?>
-                        <button class="btn btn-disabled" disabled>تأكيد</button>
-                        <button class="btn btn-disabled" disabled>إلغاء</button>
-                        <?php endif; ?>
-                        
+
                         <a href="event_details.php?id=<?= $event["event_id"] ?>">
                             <button class="btn btn-details">التفاصيل</button>
                         </a>
@@ -181,11 +185,13 @@ function renderStatus($status) {
             const sidebar = document.querySelector('.sidebar');
             const overlay = document.querySelector('.sidebar-overlay');
             const hamburger = document.querySelector('.hamburger-btn');
-            
+
             sidebar.classList.toggle('active');
             overlay.classList.toggle('active');
             hamburger.classList.toggle('active');
         }
     </script>
+
 </body>
 </html>
+```

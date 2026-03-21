@@ -484,9 +484,16 @@ if ($from && $to) {
                             <td><?= $r['level'] ?></td>
                             <td><?= $r['type_name'] ?></td>
                             <td>
-                                <span class="badge badge-status <?= $r['status']=='confirmed'?'bg-danger':($r['status']=='suspected'?'bg-warning text-dark':'bg-success') ?>">
-                                    <?= $r['status'] ?>
-                                </span>
+                                <?php
+// تحويل الحالة للعرض بالعربي
+                                   $status_ar = $r['status'] === 'confirmed' ? 'مؤكدة' :
+                                   ($r['status'] === 'rejected' ? 'ملغية' : 'مشتبه');
+                                   $badge_class = $r['status'] === 'confirmed' ? 'bg-success' :
+                                   ($r['status'] === 'rejected' ? 'bg-danger' : 'bg-warning text-dark');
+                                     ?>
+                                    <span class="badge badge-status <?= $badge_class ?>">
+                                     <?= $status_ar ?>
+                                         </span>
                             </td>
                             <td><?= $r['event_time'] ?></td>
                         </tr>
