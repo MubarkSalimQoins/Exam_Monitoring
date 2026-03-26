@@ -115,14 +115,15 @@ function renderStatus($status) {
                 <i class="fa-solid fa-bell"></i>
                 <span>الإشعارات</span>
             </a>
-            <a href="reports_filter.php">
-                <i class="fa-solid fa-chart-line"></i>
-                <span>التقارير</span>
+            <a href="settings_admin.php">
+               <i class="fa-solid fa-gear fa-spin"></i>
+               <!-- <i class="fa-solid fa-gear"></i> -->
+                <span>اعدادات النظام</span>س
             </a>
-            <a href="add_student.php">
-                <i class="fa-solid fa-user-plus"></i>
-                <span>إضافة طالب</span>
-            </a>
+            <a href="supervisors_admin.php" class="active">
+            <i class="fa-solid fa-user-shield"></i>
+            <span>إدارة المراقبين</span>
+        </a>
             <a href="login.php" class="logout">
                 <i class="fa-solid fa-right-from-bracket"></i>
                 <span>تسجيل الخروج</span>
