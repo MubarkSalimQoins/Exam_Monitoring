@@ -23,15 +23,15 @@ $settings = $stmt->fetchAll(PDO::FETCH_ASSOC);
 <body>
 
 <!-- Hamburger -->
-<div class="hamburger-btn" onclick="toggleSidebar()">
+<!-- <div class="hamburger-btn" onclick="toggleSidebar()">
     <span></span><span></span><span></span>
-</div>
+</div> -->
 
 <!-- Overlay -->
 <div class="sidebar-overlay" onclick="toggleSidebar()"></div>
 
 <!-- Sidebar -->
-<div class="sidebar">
+<!-- <div class="sidebar">
     <div class="sidebar-header">
         <div class="sidebar-logo"><i class="fa-solid fa-graduation-cap"></i></div>
         <h3 class="sidebar-title">جامعة شبوة</h3>
@@ -45,7 +45,7 @@ $settings = $stmt->fetchAll(PDO::FETCH_ASSOC);
         <a href="settings_admin.php" class="active"><i class="fa-solid fa-gear"></i><span>الإعدادات</span></a>
         <a href="login.php" class="logout"><i class="fa-solid fa-right-from-bracket"></i><span>تسجيل الخروج</span></a>
     </div>
-</div>
+</div> -->
 
 <!-- Modal تعديل -->
 <div class="modal" id="editModal">

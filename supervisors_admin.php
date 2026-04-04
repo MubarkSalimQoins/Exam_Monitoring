@@ -23,15 +23,15 @@ $supCnt    = count(array_filter($supervisors, fn($s) => $s['role'] === 'supervis
 <body>
 
 <!-- Hamburger -->
-<div class="hamburger-btn" onclick="toggleSidebar()">
+<!-- <div class="hamburger-btn" onclick="toggleSidebar()">
     <span></span><span></span><span></span>
-</div>
+</div> -->
 
 <!-- Overlay -->
-<div class="sidebar-overlay" onclick="toggleSidebar()"></div>
+<!-- <div class="sidebar-overlay" onclick="toggleSidebar()"></div> -->
 
 <!-- Sidebar -->
-<div class="sidebar">
+<!-- <div class="sidebar">
     <div class="sidebar-header">
         <div class="sidebar-logo">
             <i class="fa-solid fa-graduation-cap"></i>
@@ -61,7 +61,7 @@ $supCnt    = count(array_filter($supervisors, fn($s) => $s['role'] === 'supervis
             <span>تسجيل الخروج</span>
         </a>
     </div>
-</div>
+</div> -->
 
 <!-- Modal تعديل -->
 <div class="modal" id="editModal">
