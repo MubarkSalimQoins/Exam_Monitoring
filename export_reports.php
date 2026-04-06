@@ -1,360 +1,355 @@
 <?php
-// report_mpdf.php - نسخة محسنة باستخدام mPDF
 require "db.php";
 require __DIR__ . '/vendor/autoload.php';
-
 use Mpdf\Mpdf;
 
-// جلب البيانات من GET
-$from = $_GET['from'] ?? null;
-$to   = $_GET['to'] ?? null;
+$from   = $_GET['from']   ?? null;
+$to     = $_GET['to']     ?? null;
 $format = $_GET['format'] ?? 'pdf';
 
-$reports = [];
-$total = 0;
+$reports   = [];
+$total     = 0;
 $confirmed = 0;
 $suspected = 0;
 $dismissed = 0;
 
 if ($from && $to) {
-    $sql = "
-        SELECT
-            s.name,
-            s.student_number,
-            s.major,
-            s.level,
-            ct.type_name,
-            ce.status,
-            ce.event_time
-        FROM cheating_events ce
-        JOIN students s ON ce.student_id = s.student_id
-        JOIN cheating_types ct ON ce.cheating_type_id = ct.cheating_type_id
-        WHERE DATE(ce.event_time) BETWEEN :from AND :to
-        ORDER BY ce.event_time DESC
-    ";
+    $sql = "SELECT
+        s.name, s.student_number, s.major, s.level,
+        ct.type_name, ce.status, ce.event_time
+    FROM cheating_events ce
+    JOIN students s      ON ce.student_id       = s.student_id
+    JOIN cheating_types ct ON ce.cheating_type_id = ct.cheating_type_id
+    WHERE DATE(ce.event_time) BETWEEN :from AND :to
+    ORDER BY ce.event_time DESC";
     $stmt = $pdo->prepare($sql);
     $stmt->execute([':from' => $from, ':to' => $to]);
-    $reports = $stmt->fetchAll();
-    
-    $total = count($reports);
+    $reports   = $stmt->fetchAll();
+    $total     = count($reports);
     $confirmed = count(array_filter($reports, fn($r) => $r['status'] === 'confirmed'));
     $suspected = count(array_filter($reports, fn($r) => $r['status'] === 'suspected'));
     $dismissed = count(array_filter($reports, fn($r) => $r['status'] === 'dismissed'));
 }
 
-// تصدير CSV إذا طلب
 if ($format === 'csv') {
     header('Content-Type: text/csv; charset=utf-8');
     header('Content-Disposition: attachment; filename=reports.csv');
     $output = fopen('php://output', 'w');
     fprintf($output, chr(0xEF).chr(0xBB).chr(0xBF));
-    fputcsv($output, ['الطالب', 'رقم القيد', 'التخصص', 'المستوى', 'نوع الغش', 'الحالة', 'التاريخ']);
+    fputcsv($output, ['الطالب','رقم القيد','التخصص','المستوى','نوع الغش','الحالة','التاريخ']);
     foreach ($reports as $r) {
-        fputcsv($output, [
-            $r['name'],
-            $r['student_number'],
-            $r['major'],
-            $r['level'],
-            $r['type_name'],
-            $r['status'],
-            $r['event_time']
-        ]);
+        fputcsv($output, [$r['name'],$r['student_number'],$r['major'],$r['level'],$r['type_name'],$r['status'],$r['event_time']]);
     }
     fclose($output);
     exit;
 }
 
-// إنشاء PDF باستخدام mPDF
+// ===== إعداد mPDF مع خط عربي صحيح =====
 $mpdf = new Mpdf([
-    'mode' => 'utf-8',
-    'format' => 'A4',
-    'margin_left' => 15,
-    'margin_right' => 15,
-    'margin_top' => 25,
-    'margin_bottom' => 20,
-    'default_font' => 'dejavusans',
-    'directionality' => 'rtl' // تفعيل الكتابة من اليمين لليسار
+    'mode'              => 'utf-8',
+    'format'            => 'A4',
+    'margin_left'       => 10,
+    'margin_right'      => 10,
+    'margin_top'        => 6,
+    'margin_bottom'     => 12,
+    'directionality'    => 'rtl',
+    'default_font'      => 'dejavusans',
+    'autoScriptToLang'  => true,
+    'autoLangToFont'    => true,
+    'autoArabic'        => true,
 ]);
 
-// تعيين معلومات المستند
-$mpdf->SetCreator('نظام إدارة التقارير');
-$mpdf->SetAuthor('نظام إدارة الغش');
+$mpdf->SetCreator('جامعة شبوة');
+$mpdf->SetAuthor('نظام مراقبة الاختبارات');
 $mpdf->SetTitle('تقرير حالات الغش');
 
-// محتوى HTML مع CSS متقدم
+$generatedAt = date('Y/m/d  H:i');
+$periodText  = htmlspecialchars($from ?? '') . ' — ' . htmlspecialchars($to ?? '');
+
+// ===== صفوف الجدول =====
+$tableRows = '';
+if (!empty($reports)) {
+    foreach ($reports as $i => $r) {
+        $statusMap = [
+            'confirmed' => ['label' => 'مؤكدة',     'bg' => '#dc2626', 'c' => '#fff'],
+            'suspected' => ['label' => 'مشتبه بها', 'bg' => '#d97706', 'c' => '#fff'],
+            'dismissed' => ['label' => 'غير مثبتة', 'bg' => '#16a34a', 'c' => '#fff'],
+        ];
+        $st    = $statusMap[$r['status']] ?? ['label' => $r['status'], 'bg' => '#64748b', 'c' => '#fff'];
+        $rowBg = ($i % 2 === 0) ? '#ffffff' : '#f0f5ff';
+        $date  = date('Y-m-d', strtotime($r['event_time']));
+        $time  = date('H:i',   strtotime($r['event_time']));
+
+        $tableRows .= '
+        <tr style="background:' . $rowBg . ';">
+            <td class="tc gray">' . ($i + 1) . '</td>
+            <td class="bold dark">' . htmlspecialchars($r['name']) . '</td>
+            <td class="tc mid">' . htmlspecialchars($r['student_number']) . '</td>
+            <td class="tc mid">' . htmlspecialchars($r['major']) . '</td>
+            <td class="tc mid">' . htmlspecialchars($r['level']) . '</td>
+            <td class="tc mid">' . htmlspecialchars($r['type_name']) . '</td>
+            <td class="tc">
+                <span style="background:' . $st['bg'] . ';color:' . $st['c'] . ';padding:3px 9px;border-radius:10px;font-size:11px;font-weight:bold;">' . $st['label'] . '</span>
+            </td>
+            <td class="tc gray" style="font-size:11px;">' . $date . '<br>' . $time . '</td>
+        </tr>';
+    }
+} else {
+    $tableRows = '<tr><td colspan="8" style="text-align:center;padding:35px;color:#94a3b8;font-size:13px;">لا توجد بيانات في هذه الفترة الزمنية</td></tr>';
+}
+
 $html = '
 <!DOCTYPE html>
 <html dir="rtl" lang="ar">
 <head>
-    <meta charset="UTF-8">
-    <style>
-        * {
-            font-family: "dejavusans", sans-serif;
-        }
-        body {
-            margin: 0;
-            padding: 0;
-            background-color: #f8f9fa;
-        }
-        .report-container {
-            max-width: 100%;
-            padding: 0;
-        }
-        .header {
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-            color: white;
-            padding: 25px 20px;
-            border-radius: 15px 15px 0 0;
-            margin-bottom: 25px;
-            text-align: center;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
-        }
-        .header h1 {
-            margin: 0;
-            font-size: 28px;
-            font-weight: bold;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
-        }
-        .header p {
-            margin: 10px 0 0;
-            font-size: 16px;
-            opacity: 0.95;
-        }
-        .date-badge {
-            background: rgba(255,255,255,0.2);
-            padding: 8px 20px;
-            border-radius: 25px;
-            display: inline-block;
-            margin-top: 10px;
-            font-size: 14px;
-        }
-        .stats-grid {
-            display: flex;
-            justify-content: space-between;
-            gap: 15px;
-            margin-bottom: 25px;
-            direction: ltr;
-        }
-        .stat-card {
-            flex: 1;
-            background: white;
-            border-radius: 12px;
-            padding: 18px 12px;
-            text-align: center;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-            border: 1px solid #e9ecef;
-            transition: transform 0.2s;
-        }
-        .stat-card:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 6px 16px rgba(0,0,0,0.1);
-        }
-        .stat-icon {
-            font-size: 24px;
-            margin-bottom: 8px;
-        }
-        .stat-number {
-            font-size: 28px;
-            font-weight: bold;
-            color: #2c3e50;
-            line-height: 1.2;
-        }
-        .stat-label {
-            font-size: 14px;
-            color: #6c757d;
-            margin-top: 5px;
-        }
-        .stat-card.total .stat-number { color: #3498db; }
-        .stat-card.confirmed .stat-number { color: #e74c3c; }
-        .stat-card.suspected .stat-number { color: #f39c12; }
-        .stat-card.dismissed .stat-number { color: #2ecc71; }
-        
-        .table-container {
-            background: white;
-            border-radius: 15px;
-            padding: 20px;
-            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
-            margin-bottom: 20px;
-            border: 1px solid #e9ecef;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            font-size: 13px;
-            direction: rtl;
-        }
-        th {
-            background: linear-gradient(135deg, #3498db 0%, #2980b9 100%);
-            color: white;
-            font-weight: bold;
-            padding: 12px 8px;
-            text-align: center;
-            border: none;
-            font-size: 13px;
-        }
-        td {
-            padding: 10px 8px;
-            text-align: center;
-            border-bottom: 1px solid #e9ecef;
-            background-color: white;
-        }
-        tr:last-child td {
-            border-bottom: none;
-        }
-        tr:hover td {
-            background-color: #f8f9fa;
-        }
-        .status-badge {
-            display: inline-block;
-            padding: 5px 12px;
-            border-radius: 25px;
-            font-weight: bold;
-            font-size: 12px;
-            min-width: 70px;
-        }
-        .status-confirmed {
-            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
-            color: white;
-        }
-        .status-suspected {
-            background: linear-gradient(135deg, #f39c12 0%, #d35400 100%);
-            color: white;
-        }
-        .status-dismissed {
-            background: linear-gradient(135deg, #2ecc71 0%, #27ae60 100%);
-            color: white;
-        }
-        .footer {
-            text-align: center;
-            color: #95a5a6;
-            font-size: 11px;
-            margin-top: 25px;
-            padding-top: 15px;
-            border-top: 1px dashed #dee2e6;
-        }
-        .no-data {
-            text-align: center;
-            padding: 50px;
-            color: #95a5a6;
-            font-size: 16px;
-            background: white;
-            border-radius: 15px;
-        }
-        .table-title {
-            font-size: 16px;
-            font-weight: bold;
-            color: #2c3e50;
-            margin-bottom: 15px;
-            padding-right: 5px;
-        }
-        @media print {
-            .stat-card { box-shadow: none; border: 1px solid #ddd; }
-        }
-    </style>
-</head>
-<body>
-    <div class="report-container">
-        <!-- الهيدر -->
-        <div class="header">
-            <h1>📊 تقرير حالات الغش</h1>
-            <p>نظام متابعة ومراقبة حالات الغش في المؤسسة التعليمية</p>
-            <div class="date-badge">
-                📅 الفترة: ' . htmlspecialchars($from) . ' إلى ' . htmlspecialchars($to) . '
-            </div>
-        </div>';
+<meta charset="UTF-8">
+<style>
 
-if (!empty($reports)) {
-    // بطاقات الإحصائيات
-    $html .= '
-        <div class="stats-grid">
-            <div class="stat-card total">
-                <div class="stat-icon">📋</div>
-                <div class="stat-number">' . $total . '</div>
-                <div class="stat-label">إجمالي الحالات</div>
-            </div>
-            <div class="stat-card confirmed">
-                <div class="stat-icon">⚠️</div>
-                <div class="stat-number">' . $confirmed . '</div>
-                <div class="stat-label">مؤكدة</div>
-            </div>
-            <div class="stat-card suspected">
-                <div class="stat-icon">🔍</div>
-                <div class="stat-number">' . $suspected . '</div>
-                <div class="stat-label">مشتبه بها</div>
-            </div>
-            <div class="stat-card dismissed">
-                <div class="stat-icon">✅</div>
-                <div class="stat-number">' . $dismissed . '</div>
-                <div class="stat-label">غير مثبتة</div>
-            </div>
-        </div>
-        
-        <div class="table-container">
-            <div class="table-title">
-                📋 قائمة تفصيلية بالحالات
-            </div>
-            <table>
-                <thead>
-                    <tr>
-                        <th>الطالب</th>
-                        <th>رقم القيد</th>
-                        <th>التخصص</th>
-                        <th>المستوى</th>
-                        <th>نوع الغش</th>
-                        <th>الحالة</th>
-                        <th>التاريخ</th>
-                    </tr>
-                </thead>
-                <tbody>';
-
-    foreach ($reports as $r) {
-        $statusText = [
-            'confirmed' => 'مؤكدة',
-            'suspected' => 'مشتبه بها',
-            'dismissed' => 'غير مثبتة'
-        ][$r['status']] ?? $r['status'];
-
-        $statusClass = '';
-        if ($r['status'] === 'confirmed') $statusClass = 'status-confirmed';
-        elseif ($r['status'] === 'suspected') $statusClass = 'status-suspected';
-        elseif ($r['status'] === 'dismissed') $statusClass = 'status-dismissed';
-
-        $html .= '<tr>
-                    <td>' . htmlspecialchars($r['name']) . '</td>
-                    <td>' . $r['student_number'] . '</td>
-                    <td>' . $r['major'] . '</td>
-                    <td>' . $r['level'] . '</td>
-                    <td>' . $r['type_name'] . '</td>
-                    <td><span class="status-badge ' . $statusClass . '">' . $statusText . '</span></td>
-                    <td>' . date('Y-m-d H:i', strtotime($r['event_time'])) . '</td>
-                  </tr>';
-    }
-
-    $html .= '
-                </tbody>
-            </table>
-        </div>';
-} else {
-    $html .= '
-        <div class="no-data">
-            <div style="font-size: 48px; margin-bottom: 15px;">📭</div>
-            <h3>لا توجد بيانات في هذه الفترة</h3>
-            <p style="margin-top: 10px;">يرجى اختيار فترة زمنية أخرى</p>
-        </div>';
+* {
+    font-family: "dejavusans", sans-serif;
+    font-size: 14px;
+    line-height: 1.8;
 }
 
-// التذييل
-$html .= '
-        <div class="footer">
-            <p>تم إنشاء هذا التقرير بواسطة نظام إدارة التقارير - ' . date('Y-m-d H:i:s') . '</p>
-            <p style="margin-top: 5px;">جميع الحقوق محفوظة © ' . date('Y') . '</p>
-        </div>
+body { margin:0; padding:0; direction:rtl; background:#fff; color:#1e293b; }
+
+/* ===== HEADER ===== */
+.hdr-outer {
+    background: #1e3a8a;
+    padding: 0;
+    margin-bottom: 14px;
+}
+
+.hdr-top {
+    background: #1e40af;
+    padding: 16px 18px 12px;
+}
+
+.hdr-tbl { width:100%; border-collapse:collapse; }
+.hdr-tbl td { vertical-align:middle; padding:0; }
+
+.hdr-ar {
+    font-size: 16px;
+    font-weight: bold;
+    color: #ffffff;
+    line-height: 1.8;
+}
+.hdr-ar small { display:block; font-size:11px; color:#93c5fd; font-weight:normal; }
+
+.hdr-en {
+    font-size: 14px;
+    font-weight: bold;
+    color: #ffffff;
+    text-align: left;
+    direction: ltr;
+    line-height: 1.8;
+}
+.hdr-en small { display:block; font-size:10px; color:#93c5fd; font-weight:normal; }
+
+.logo-td { text-align:center; width:80px; }
+
+.hdr-bot {
+    background: #172554;
+    padding: 8px 18px;
+    text-align: center;
+    border-top: 2px solid #3b82f6;
+}
+.hdr-bot .title { font-size:17px; font-weight:bold; color:#ffffff; letter-spacing:0.5px; }
+.hdr-bot .sub   { font-size:10px; color:#93c5fd; margin-top:2px; }
+
+/* ===== META BAR ===== */
+.meta {
+    background: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 6px;
+    padding: 8px 14px;
+    margin-bottom: 14px;
+}
+.meta table { width:100%; border-collapse:collapse; }
+.meta td { font-size:12px; padding:2px 4px; vertical-align:middle; }
+.meta .lbl { color:#1e40af; font-weight:bold; width:110px; }
+.meta .val { color:#1e293b; }
+
+/* ===== STATS ===== */
+.stats { margin-bottom:14px; }
+.stats table { width:100%; border-collapse:separate; border-spacing:6px; }
+.stats td { width:25%; vertical-align:top; padding:0; }
+
+.sc {
+    border-radius: 8px;
+    padding: 12px 8px;
+    text-align: center;
+    border: 1px solid;
+}
+.sc.bl { background:#eff6ff; border-color:#bfdbfe; }
+.sc.rd { background:#fef2f2; border-color:#fecaca; }
+.sc.yw { background:#fffbeb; border-color:#fde68a; }
+.sc.gn { background:#f0fdf4; border-color:#bbf7d0; }
+
+.sc-num { font-size:28px; font-weight:bold; line-height:1.1; margin-bottom:3px; }
+.sc.bl .sc-num { color:#1d4ed8; }
+.sc.rd .sc-num { color:#dc2626; }
+.sc.yw .sc-num { color:#d97706; }
+.sc.gn .sc-num { color:#16a34a; }
+
+.sc-lbl { font-size:12px; color:#64748b; font-weight:bold; }
+
+/* ===== DIVIDER ===== */
+.div {
+    height: 2px;
+    background: #1e40af;
+    margin: 12px 0;
+    border-radius: 2px;
+}
+
+/* ===== SECTION TITLE ===== */
+.sec-title {
+    font-size: 14px;
+    font-weight: bold;
+    color: #1e3a8a;
+    margin-bottom: 8px;
+    padding-right: 10px;
+    border-right: 4px solid #3b82f6;
+    line-height: 1.6;
+}
+
+/* ===== TABLE ===== */
+.dt { width:100%; border-collapse:collapse; font-size:12px; }
+
+.dt thead tr { background:#1e40af; }
+.dt thead th {
+    color: #ffffff;
+    padding: 10px 7px;
+    text-align: center;
+    font-size: 12px;
+    font-weight: bold;
+    border: none;
+}
+
+.dt tbody td {
+    padding: 8px 7px;
+    border-bottom: 1px solid #e2e8f0;
+    font-size: 12px;
+}
+.dt tbody tr:last-child td { border-bottom: none; }
+
+.tc   { text-align: center; }
+.bold { font-weight: bold; }
+.dark { color: #1e293b; }
+.mid  { color: #475569; }
+.gray { color: #64748b; }
+
+/* ===== FOOTER ===== */
+.ftr {
+    margin-top: 16px;
+    padding-top: 10px;
+    border-top: 2px solid #e2e8f0;
+    text-align: center;
+}
+.ftr-box {
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    padding: 9px 14px;
+}
+.ftr p { margin:2px 0; font-size:10px; color:#94a3b8; }
+.ftr .fm { font-size:11px; color:#64748b; font-weight:bold; }
+
+</style>
+</head>
+<body>
+
+<!-- HEADER -->
+<div class="hdr-outer">
+    <div class="hdr-top">
+        <table class="hdr-tbl">
+            <tr>
+                <td style="width:38%;">
+                    <div class="hdr-ar">
+                        تقارير حالات الغش
+                        <small>نظام مراقبة الاختبارات</small>
+                    </div>
+                </td>
+                <td class="logo-td">
+                    <img src="' . __DIR__ . '/images/shbwoh.jpg" width="70" height="70" style="border-radius:50%;border:3px solid #60a5fa;">
+                </td>
+                <td style="width:38%;">
+                    <div class="hdr-en">
+                        Cheating Cases Report
+                        <small>Exam Monitoring System</small>
+                    </div>
+                </td>
+            </tr>
+        </table>
     </div>
+    <div class="hdr-bot">
+        <div class="title">جامعة شبوة &nbsp;|&nbsp; Shabwa University</div>
+        <div class="sub">كلية تقنية المعلومات — College of Information Technology</div>
+    </div>
+</div>
+
+<!-- META BAR -->
+<div class="meta">
+    <table>
+        <tr>
+            <td class="lbl">الفترة الزمنية:</td>
+            <td class="val">' . $periodText . '</td>
+            <td style="width:20px;"></td>
+            <td class="lbl">تاريخ الإصدار:</td>
+            <td class="val">' . $generatedAt . '</td>
+            <td style="width:20px;"></td>
+            <td class="lbl">إجمالي الحالات:</td>
+            <td class="val" style="font-weight:bold;color:#1d4ed8;">' . $total . ' حالة</td>
+        </tr>
+    </table>
+</div>
+
+<!-- STATS -->
+<div class="stats">
+    <table>
+        <tr>
+            <td><div class="sc bl"><div class="sc-num">' . $total . '</div><div class="sc-lbl">إجمالي الحالات</div></div></td>
+            <td><div class="sc rd"><div class="sc-num">' . $confirmed . '</div><div class="sc-lbl">حالات مؤكدة</div></div></td>
+            <td><div class="sc yw"><div class="sc-num">' . $suspected . '</div><div class="sc-lbl">مشتبه بها</div></div></td>
+            <td><div class="sc gn"><div class="sc-num">' . $dismissed . '</div><div class="sc-lbl">غير مثبتة</div></div></td>
+        </tr>
+    </table>
+</div>
+
+<div class="div"></div>
+
+<!-- TABLE -->
+<div class="sec-title">قائمة تفصيلية بحالات الغش المسجلة</div>
+
+<table class="dt">
+    <thead>
+        <tr>
+            <th style="width:4%;">#</th>
+            <th style="width:19%;">اسم الطالب</th>
+            <th style="width:11%;">رقم القيد</th>
+            <th style="width:11%;">التخصص</th>
+            <th style="width:8%;">المستوى</th>
+            <th style="width:16%;">نوع الغش</th>
+            <th style="width:12%;">الحالة</th>
+            <th style="width:14%;">التاريخ</th>
+        </tr>
+    </thead>
+    <tbody>' . $tableRows . '</tbody>
+</table>
+
+<div class="div"></div>
+
+<!-- FOOTER -->
+<div class="ftr">
+    <div class="ftr-box">
+        <p class="fm">جامعة شبوة — Shabwa University — نظام مراقبة الاختبارات</p>
+        <p>تم إنشاء هذا التقرير آلياً بتاريخ: ' . $generatedAt . ' &nbsp;|&nbsp; هذا التقرير سري ولا يجوز تداوله</p>
+        <p>Automatically generated by Exam Monitoring System &copy; ' . date('Y') . '</p>
+    </div>
+</div>
+
 </body>
 </html>';
 
-// كتابة المحتوى
 $mpdf->WriteHTML($html);
-
-// إخراج PDF
 $mpdf->Output('تقرير_حالات_الغش_' . date('Y-m-d') . '.pdf', 'I');

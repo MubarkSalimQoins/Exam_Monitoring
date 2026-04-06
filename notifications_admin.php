@@ -118,7 +118,7 @@ function renderStatus($status) {
             <a href="settings_admin.php">
                <i class="fa-solid fa-gear fa-spin"></i>
                <!-- <i class="fa-solid fa-gear"></i> -->
-                <span>اعدادات النظام</span>س
+                <span>اعدادات النظام</span>
             </a>
             <a href="supervisors_admin.php" class="active">
             <i class="fa-solid fa-user-shield"></i>
@@ -174,6 +174,9 @@ function renderStatus($status) {
                         <a href="event_details.php?id=<?= $event["event_id"] ?>">
                             <button class="btn btn-details">التفاصيل</button>
                         </a>
+                        <!-- <a href="event_details.php?id=<?= $event["event_id"] ?>">
+                            <button class="btn btn-details">الحذف</button>
+                        </a> -->
                     </td>
                 </tr>
                 <?php endforeach; ?>
